@@ -39,3 +39,44 @@ that simplify candidate screening for organizations.
 git clone https://github.com/abyy0/resume-match-studio.git
 cd resume-match-studio/airesume
 mvn spring-boot:run
+
+airesume/
+ ├── src/
+ │   ├── main/
+ │   │   ├── java/com/aby/airesume/...
+ │   │   ├── resources/
+ │   │   │   ├── templates/
+ │   │   │   │   ├── index.html
+ │   │   │   │   └── result.html
+ │   │   │   └── application.properties
+ └── pom.xml
+
+
+🧩 Core Components
+
+MatchingService.java — Performs JD–Resume comparison
+
+PDFReader.java — Extracts text from uploaded PDFs
+
+cleaner.java — Normalizes and sanitizes input text
+
+ResumeController.java — Handles all application routes
+
+index.html — Premium landing page
+
+result.html — Result UI with structured output
+
+🔮 Future Enhancements
+
+Semantic AI-based match scoring
+
+Downloadable PDF report
+
+Smart skill suggestions
+
+Public deployment (Render / AWS)
+
+🪐 Author
+
+Abhignya
+Resume Match Studio • Premium UI • Spring Boot Developm
