@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>AI Resume Match Report</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --bg: #eef1f6;
+            --glass: rgba(255, 255, 255, 0.55);
+            --border: rgba(255, 255, 255, 0.35);
+            --text: #0f1419;
+            --card-bg: rgba(255, 255, 255, 0.65);
+            --shadow: rgba(0, 0, 0, 0.08);
+        }
+
+        body.dark {
+            --bg: #0c0e11;
+            --glass: rgba(30, 32, 36, 0.65);
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #e9edf3;
+            --card-bg: rgba(22, 24, 28, 0.7);
+            --shadow: rgba(0, 0, 0, 0.45);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Inter", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            transition: 0.35s ease;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 900px;
+            margin-top: 40px;
+        }
+
+        /* DARK MODE TOGGLE */
+        .toggle-container {
+            position: fixed;
+            top: 25px;
+            right: 40px;
+            z-index: 999;
+        }
+
+        .toggle {
+            width: 60px;
+            height: 30px;
+            background: #bbb;
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .toggle.dark {
+            background: #4CAF50;
+        }
+
+        .circle-btn {
+            width: 26px;
+            height: 26px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: 0.3s;
+        }
+
+        .toggle.dark .circle-btn {
+            transform: translateX(30px);
+        }
+
+        .glass-card {
+            background: var(--glass);
+            padding: 40px;
+            border-radius: 22px;
+            box-shadow: 0 8px 25px var(--shadow);
+            backdrop-filter: blur(18px);
+            border: 1px solid var(--border);
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 38px;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .score-badge {
+            width: 180px;
+            height: 180px;
+            margin: 0 auto;
+            border-radius: 50%;
+            background: conic-gradient(#4CAF50 var(--score), #cfd6df 0deg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.35);
+            transition: 0.4s;
+        }
+
+        body.dark .score-badge {
+            background: conic-gradient(#76ff91 var(--score), #333 0deg);
+            box-shadow: 0 6px 25px rgba(76, 255, 160, 0.35);
+        }
+
+        .score-inner {
+            width: 130px;
+            height: 130px;
+            background: var(--card-bg);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 38px;
+            font-weight: 700;
+        }
+
+        .section-title {
+            margin-top: 20px;
+            font-weight: 700;
+            font-size: 20px;
+        }
+
+        .box {
+            margin-top: 10px;
+            background: var(--glass);
+            padding: 18px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            white-space: pre-wrap;
+            backdrop-filter: blur(10px);
+            line-height: 1.55;
+        }
+
+        .insights {
+            background: linear-gradient(135deg, #e7f0ff, #f1f6ff);
+            color: #0a1f48;
+            padding: 22px;
+            border-left: 5px solid #1a73e8;
+            border-radius: 14px;
+            margin-top: 25px;
+        }
+
+        body.dark .insights {
+            background: #151a23;
+            color: #dbe7ff;
+            border-left-color: #4d9eff;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            margin-top: 28px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #0c57c8;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- DARK MODE TOGGLE -->
+<div class="toggle-container">
+    <div class="toggle" id="themeToggle">
+        <div class="circle-btn"></div>
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="glass-card">
+
+        <h1>AI Resume Match Report</h1>
+
+        <!-- SCORE BADGE -->
+        <div class="score-badge" id="scoreBadge" style="--score: 0deg;">
+            <div class="score-inner" id="scoreText"
+                 th:text="${matchScore != null ? matchScore + '%' : '0%'}">
+            </div>
+        </div>
+
+        <!-- RADAR CHART -->
+        <canvas id="skillsChart" style="margin-top: 35px;"></canvas>
+
+        <!-- JOB DESCRIPTION -->
+        <div class="section-title">Job Description</div>
+        <div class="box" th:text="${jobDescription}"></div>
+
+        <!-- RESUME -->
+        <div class="section-title">Resume Extract</div>
+        <div class="box" th:text="${resumeText}"></div>
+
+        <!-- AI INSIGHTS -->
+        <div class="insights">
+            <strong>AI Suggestions to Improve:</strong>
+            <ul>
+                <li>Use stronger action verbs and measurable achievements.</li>
+                <li>Highlight tools & skills mentioned in the job description.</li>
+                <li>Add specific metrics like “Improved performance by 20%”.</li>
+                <li>Customize resume for each job title to boost ATS score.</li>
+            </ul>
+        </div>
+
+        <!-- BUTTON -->
+        <button class="btn" onclick="window.location.href='/'">Upload Another Resume</button>
+    </div>
+
+</div>
+
+<script>
+    /* SCORE ANIMATION FIX */
+    let text = document.getElementById("scoreText").innerText.trim();  
+    let rawScore = text.replace("%", "");  
+    let score = parseInt(rawScore);
+
+    if (isNaN(score)) score = 0;
+
+    let degrees = (score / 100) * 360;
+    document.getElementById("scoreBadge").style.setProperty('--score', degrees + "deg");
+
+
+    /* RADAR CHART */
+    const ctx = document.getElementById('skillsChart');
+    new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: ['Technical Skills', 'Keywords Match', 'Experience', 'Relevance', 'ATS Readiness'],
+            datasets: [{
+                label: 'Match Strength',
+                data: [
+                    Math.max(score - 8, 0),
+                    Math.max(score - 12, 0),
+                    Math.max(score - 5, 0),
+                    score,
+                    Math.max(score - 10, 0)
+                ],
+                borderColor: '#1a73e8',
+                backgroundColor: 'rgba(26,115,232,0.3)',
+                borderWidth: 2,
+                pointBackgroundColor: '#1a73e8'
+            }]
+        },
+        options: {
+            scales: {
+                r: {
+                    angleLines: { color: 'rgba(150,150,150,0.2)' },
+                    grid: { color: 'rgba(150,150,150,0.2)' },
+                    suggestedMin: 0,
+                    suggestedMax: 100,
+                    ticks: { display: false }
+                }
+            }
+        }
+    });
+
+    /* DARK MODE */
+    const toggle = document.getElementById("themeToggle");
+    toggle.onclick = () => {
+        document.body.classList.toggle("dark");
+        toggle.classList.toggle("dark");
+    };
+</script>
+
+</body>
+</html>
+

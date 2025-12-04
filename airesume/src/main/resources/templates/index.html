@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resume Match Analyzer</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Inter", sans-serif;
+            background: radial-gradient(circle at top, #181c2b 0%, #060712 55%, #02030a 100%);
+            color: #f9fafb;
+            min-height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;
+            position: relative;
+            padding: 18px 14px 26px;
+        }
+
+        /* Ambient glow blobs */
+        .glow {
+            position: fixed;
+            width: 520px;
+            height: 520px;
+            border-radius: 50%;
+            filter: blur(160px);
+            opacity: 0.4;
+            pointer-events: none;
+            z-index: -2;
+        }
+        .glow-1 { background: #22c55e; top: -220px; left: -160px; }
+        .glow-2 { background: #2563eb; bottom: -260px; right: -180px; }
+
+        /* Floating particles */
+        .particle {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: rgba(148, 163, 184, 0.55);
+            opacity: 0.4;
+            animation: drift 12s linear infinite;
+            z-index: -1;
+        }
+        @keyframes drift {
+            0% { transform: translate3d(0, 0, 0); opacity: 0.2; }
+            50% { opacity: 0.7; }
+            100% { transform: translate3d(-40px, -120px, 0); opacity: 0.1; }
+        }
+
+        /* Navbar */
+        .navbar {
+            max-width: 1040px;
+            margin: 0 auto 12px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            backdrop-filter: blur(18px);
+            background: radial-gradient(circle at top left, rgba(148, 163, 255, 0.22), rgba(15, 23, 42, 0.92));
+            border: 1px solid rgba(148, 163, 255, 0.35);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.85);
+        }
+
+        .logo-mark {
+            width: 30px;
+            height: 30px;
+            border-radius: 999px;
+            background: radial-gradient(circle at 30% 20%, #22c55e, #0f172a);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-mark::before {
+            content: "";
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            border-radius: 999px;
+            border: 2px solid rgba(148, 163, 255, 0.7);
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.8);
+            animation: pulse-ring 3s ease-in-out infinite;
+        }
+        .logo-mark::after {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #e5f0ff;
+            box-shadow: 0 0 10px rgba(248, 250, 252, 0.9);
+        }
+
+        @keyframes pulse-ring {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.12); opacity: 1; }
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-name {
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .brand-tagline {
+            font-size: 11px;
+            opacity: 0.6;
+        }
+
+        /* Main container */
+        .shell {
+            max-width: 1040px;
+            margin: 0 auto;
+            margin-top: 8px;
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.1fr);
+            gap: 24px;
+        }
+
+        @media (max-width: 880px) {
+            .shell {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Left content panel */
+        .hero-panel {
+            border-radius: 24px;
+            padding: 26px 26px 22px;
+            background: radial-gradient(circle at top, rgba(30, 64, 175, 0.45), rgba(15, 23, 42, 0.96));
+            border: 1px solid rgba(148, 163, 255, 0.4);
+            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.9);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-panel::after {
+            content: "";
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(96, 165, 250, 0.4), transparent);
+            top: -80px;
+            right: -40px;
+            filter: blur(6px);
+            opacity: 0.7;
+        }
+
+        .hero-title {
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 10px;
+        }
+
+        .hero-subtitle {
+            font-size: 13px;
+            opacity: 0.7;
+            max-width: 320px;
+            line-height: 1.5;
+        }
+
+        .pill-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 24px;
+        }
+
+        .pill {
+            font-size: 11px;
+            padding: 6px 11px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.82);
+            border: 1px solid rgba(148, 163, 255, 0.4);
+            color: #e5e7eb;
+        }
+
+        .hero-footer {
+            margin-top: 26px;
+            font-size: 11px;
+            opacity: 0.55;
+        }
+
+        /* Right form card */
+        .form-card {
+            border-radius: 24px;
+            padding: 22px 22px 18px;
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid rgba(30, 64, 175, 0.7);
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(18px);
+        }
+
+        .form-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 14px;
+        }
+
+        .field-label {
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        textarea {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 12px;
+            border: 1px solid rgba(51, 65, 85, 0.9);
+            padding: 10px 11px;
+            font-size: 13px;
+            color: #e5e7eb;
+            resize: none;
+            outline: none;
+            min-height: 120px;
+        }
+
+        textarea::placeholder {
+            color: #6b7280;
+        }
+
+        .section {
+            margin-bottom: 16px;
+        }
+
+        .upload-box {
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 10px;
+            border: 1px dashed rgba(75, 85, 99, 0.9);
+            padding: 9px 10px;
+            margin-bottom: 8px;
+        }
+
+        input[type=file] {
+            width: 100%;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .button-primary {
+            width: 100%;
+            margin-top: 10px;
+            padding: 11px 14px;
+            border-radius: 999px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            color: #020617;
+            background: radial-gradient(circle at 0% 0%, #22c55e 0%, #22c55e 25%, #2563eb 80%);
+            box-shadow: 0 12px 40px rgba(37, 99, 235, 0.6);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+        }
+
+        .button-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 55px rgba(37, 99, 235, 0.75);
+            filter: brightness(1.03);
+        }
+
+        .button-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 8px 30px rgba(15, 23, 42, 0.9);
+        }
+
+        .hint {
+            margin-top: 8px;
+            font-size: 11px;
+            opacity: 0.55;
+        }
+
+        /* Loader overlay */
+        .loader-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.78);
+            backdrop-filter: blur(14px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 40;
+        }
+
+        .loader-box {
+            text-align: center;
+        }
+
+        .loader-ring {
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            border: 5px solid rgba(148, 163, 184, 0.4);
+            border-top-color: #22c55e;
+            border-right-color: #2563eb;
+            animation: spin 0.9s linear infinite;
+            box-shadow: 0 0 32px rgba(59, 130, 246, 0.8);
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loader-text {
+            margin-top: 14px;
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        footer {
+            max-width: 1040px;
+            margin: 16px auto 0;
+            font-size: 11px;
+            opacity: 0.5;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+
+<!-- randomly placed particles -->
+<script>
+    for (let i = 0; i < 35; i++) {
+        const p = document.createElement("div");
+        p.className = "particle";
+        p.style.left = Math.random() * 100 + "vw";
+        p.style.top = Math.random() * 100 + "vh";
+        p.style.animationDuration = 10 + Math.random() * 10 + "s";
+        p.style.animationDelay = Math.random() * 8 + "s";
+        document.body.appendChild(p);
+    }
+</script>
+
+<!-- Loader -->
+<div id="loader" class="loader-overlay">
+    <div class="loader-box">
+        <div class="loader-ring"></div>
+        <p class="loader-text">Processing resume details…</p>
+    </div>
+</div>
+
+<!-- Navbar -->
+<div class="navbar">
+    <div class="logo-mark"></div>
+    <div class="brand-text">
+        <span class="brand-name">Resume Match Studio</span>
+        <span class="brand-tagline">Role-specific resume evaluation</span>
+    </div>
+</div>
+
+<div class="shell">
+
+    <!-- LEFT: Hero panel -->
+    <section class="hero-panel">
+        <h1 class="hero-title">Resume Match Analyzer</h1>
+        <p class="hero-subtitle">
+            Evaluate how closely a resume aligns with a specific role. Designed for teams that care about clarity,
+            relevance, and a smooth screening workflow.
+        </p>
+
+        <div class="pill-row">
+            <span class="pill">Skill alignment overview</span>
+            <span class="pill">Role-focused comparison</span>
+            <span class="pill">Structured job description input</span>
+            <span class="pill">Works with PDF or text</span>
+        </div>
+
+        <p class="hero-footer">
+            Paste a job description on the right, upload a resume, and view a structured match report in seconds.
+        </p>
+    </section>
+
+    <!-- RIGHT: Form card -->
+    <section class="form-card">
+        <form id="matchForm" action="/match" method="POST" enctype="multipart/form-data">
+
+            <div class="section">
+                <label class="field-label">Job Description</label>
+                <textarea name="jobDescription" placeholder="Paste job description for the open role..." required></textarea>
+            </div>
+
+            <div class="section">
+                <label class="field-label">Resume</label>
+                <div class="upload-box">
+                    <input type="file" name="resumeFile" accept=".pdf">
+                </div>
+                <textarea name="resumeText" placeholder="Or paste resume content here (optional if a file is uploaded)"></textarea>
+                <p class="hint">You can either upload a PDF or paste the text version of the resume.</p>
+            </div>
+
+            <button class="button-primary" type="submit">Generate Match Report</button>
+        </form>
+    </section>
+</div>
+
+<footer>©abyResumeMatch Studio</footer>
+
+<script>
+    const form = document.getElementById("matchForm");
+    const loader = document.getElementById("loader");
+
+    form.addEventListener("submit", () => {
+        loader.style.display = "flex";
+    });
+</script>
+
+</body>
+</html>
+
+
